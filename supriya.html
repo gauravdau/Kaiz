@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🏏 Pro Cricket Live Hub</title>
+  <style>
+    /* basic reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Poppins', 'Segoe UI', sans-serif;
+      background: #04091a; /* deep dark blue background */
+      background-image: 
+        radial-gradient(at 10% 10%, rgba(30, 144, 255, 0.2) 0px, transparent 50%),
+        radial-gradient(at 90% 90%, rgba(255, 0, 128, 0.15) 0px, transparent 50%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px;
+      padding-bottom: 30px;
+    }
+
+    .container { width: 100%; max-width: 480px; }
+    
+    /* Header styling */
+    header { text-align:center; margin-bottom: 25px; margin-top: 10px; }
+    .app-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #00fff2, #cc00ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    #msg { font-size: 0.85rem; color: #aaa; margin-top: 5px; }
+
+    /* Main Live Score Card - Stylish & Vibrant */
+    .main-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px); /* Glass effect */
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 25px;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 25px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .main-card::before {
+        content:''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0) 70%);
+        transform: rotate(30deg);
+    }
+
+    .status-badge {
+      background: linear-gradient(135deg, #ff0055, #ffcc00);
+      color: #000;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 10px rgba(255, 0, 85, 0.4);
+    }
+
+    .teams-display {
+        display: flex; align-items: center; justify-content: center; gap: 15px;
+        margin-bottom: 15px; font-weight: 700; font-size: 1.3rem;
+    }
+    .vs-circle {
+        background: rgba(255,255,255,0.1); width: 35px; height: 35px;
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 0.7rem; color: #00fff2; border: 1px solid rgba(0,255,242,0.3);
+    }
+
+    .score {
+      font-size: 3rem;
+      background: linear-gradient(100deg, #fff 0%, #ffcc00 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      margin: 10px 0;
+      line-height: 1;
+    }
+    .score-label { font-size: 1rem; color: #00fff2; font-weight: 500; margin-top: -5px; margin-bottom: 10px;}
+
+    .venue { font-size: 0.8rem; color: #bbb; }
+
+    /* Match List Area */
+    .list-title {
+      margin: 20px 0 15px;
+      font-size: 1.2rem;
+      color: #fff;
+      font-weight: 600;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .list-title::before { content:''; width: 5px; height: 20px; background: #cc00ff; border-radius: 3px; }
+    
+    #match-list-container {
+      display: flex; flex-direction: column; gap: 15px;
+      max-height: 400px; overflow-y: auto; padding-right: 5px;
+    }
+    
+    /* Matching Item - Animated & Glassy */
+    .match-item {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 18px;
+      border-radius: 16px;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+      animation: fadeIn 0.5s ease backwards;
+    }
+    .match-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-3px);
+      border-color: rgba(0, 255, 242, 0.3);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    .match-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .match-item h4 { font-size: 1rem; color: #fff; font-weight: 600; }
+    .match-fmt { font-size: 0.7rem; color: #cc00ff; background: rgba(204,0,255,0.1); padding: 2px 6px; border-radius: 4px; text-transform: uppercase;}
+    
+    .match-item-score { font-size: 1.1rem; color: #ffcc00; font-weight: 700; margin-bottom: 5px; }
+    .match-item-status { font-size: 0.8rem; color: #00fff2; }
+
+    /* Vibrant Refresh Button */
+    #refresh-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #cc00ff 0%, #ff0055 100%);
+      border: none;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-top: 25px;
+      cursor: pointer;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 8px 20px rgba(204, 0, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+    #refresh-btn:hover {
+        box-shadow: 0 10px 25px rgba(204, 0, 255, 0.6);
+        transform: translateY(-2px);
+    }
+    #refresh-btn:active { transform: translateY(1px); }
+
+    /* Scrollbar styling */
+    #match-list-container::-webkit-scrollbar { width: 5px; }
+    #match-list-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+    /* Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1 class="app-title">PRO Live Score</h1>
+    <p id="msg">Initializing...</p>
+  </header>
+
+  <div class="main-card">
+    <div id="m-status" class="status-badge">Select Match</div>
+    
+    <div class="teams-display">
+        <span id="m-team1">Team A</span>
+        <div class="vs-circle">VS</div>
+        <span id="m-team2">Team B</span>
+    </div>
+
+    <div id="m-score" class="score">---</div>
+    <div id="m-label" class="score-label">Live Score</div>
+    
+    <p id="m-venue" class="venue">Venue Information</p>
+  </div>
+
+  <h3 class="list-title">Live Matches Right Now</h3>
+  <div id="match-list-container">
+    <p style='text-align:center; opacity:0.5; padding: 20px;'>Tap Update to load live actions...</p>
+  </div>
+
+  <button id="refresh-btn" onclick="loadData()">🔄 Update Scores</button>
+</div>
+
+<script>
+  // Ensure this key is valid and has usage remaining.
+  const API_KEY = "4b1da9701amshea3482f2c53e0a1p177115jsn4b3e383a19fc";
+  
+  // Helper to safely extract score and overs
+  function formatTeamScore(teamScoreObj) {
+      if (!teamScoreObj || !teamScoreObj.inngs1) return null;
+      const inngs = teamScoreObj.inngs1;
+      const runs = inngs.runs;
+      const wickets = inngs.wickets || 0;
+      const overs = inngs.overs;
+      
+      // Formatting like "145/4 (18.2 ov)"
+      let text = `${runs}/${wickets}`;
+      if (overs) {
+          text += ` <span style="font-size:0.8em; opacity:0.8; color:#fff;">(${overs} ov)</span>`;
+      }
+      return text;
+  }
+
+  // Helper to extract text-only score for the list view
+  function formatTeamScoreSimple(teamScoreObj) {
+      if (!teamScoreObj || !teamScoreObj.inngs1) return "";
+      const inngs = teamScoreObj.inngs1;
+      return `${inngs.runs}/${inngs.wickets || 0} (${inngs.overs || 0})`;
+  }
+
+  async function loadData() {
+    const msg = document.getElementById("msg");
+    const container = document.getElementById("match-list-container");
+    const btn = document.getElementById("refresh-btn");
+    
+    msg.innerText = "Fetching live streams... 📡";
+    btn.innerText = "Loading...";
+    btn.style.opacity = "0.7";
+    btn.disabled = true;
+    
+    // Live endpoint for real-time action
+    const url = 'https://cricbuzz-cricket.p.rapidapi.com/matches/v1/live';
+    
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'x-rapidapi-key': API_KEY,
+          'x-rapidapi-host': 'cricbuzz-cricket.p.rapidapi.com'
+        }
+      });
+
+      const data = await response.json();
+      container.innerHTML = ""; // Clear loader
+      let matchCount = 0;
+
+      if (!data.typeMatches) { throw new Error("No data"); }
+
+      data.typeMatches.forEach(typeObj => {
+        typeObj.seriesMatches.forEach(series => {
+          if (series.seriesAdWrapper) {
+            series.seriesAdWrapper.matches.forEach((m, index) => {
+              matchCount++;
+              const info = m.matchInfo;
+              const score = m.matchScore;
+
+              // Calculate formatted scores for main view and list
+              let t1Live = formatTeamScore(score ? score.team1Score : null);
+              let t2Live = formatTeamScore(score ? score.team2Score : null);
+              
+              let t1Simple = formatTeamScoreSimple(score ? score.team1Score : null);
+              let t2Simple = formatTeamScoreSimple(score ? score.team2Score : null);
+
+              // Decide what to show in the list (if inning 2 started, show T2 score, else T1)
+              let listScore = t2Simple ? `${info.team2.teamName}: ${t2Simple}` : (t1Simple ? `${info.team1.teamName}: ${t1Simple}` : "Match Yet To Start");
+
+              const div = document.createElement("div");
+              div.className = "match-item";
+              div.style.animationDelay = `${index * 100}ms`; // Staggered animation
+              
+              div.onclick = () => {
+                document.getElementById("m-team1").innerText = info.team1.teamName;
+                document.getElementById("m-team2").innerText = info.team2.teamName;
+                document.getElementById("m-status").innerText = info.status || "LIVE";
+                document.getElementById("m-venue").innerText = `${info.venueInfo.ground}, ${info.venueInfo.city}`;
+                
+                // Prioritize displaying the active inning's score in large text
+                if (t2Live) {
+                    document.getElementById("m-score").innerHTML = t2Live;
+                    document.getElementById("m-label").innerText = `${info.team2.teamName} Innings`;
+                } else if (t1Live) {
+                    document.getElementById("m-score").innerHTML = t1Live;
+                    document.getElementById("m-label").innerText = `${info.team1.teamName} Innings`;
+                } else {
+                    document.getElementById("m-score").innerText = "Toss Pending";
+                    document.getElementById("m-label").innerText = "Live Score";
+                }
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              };
+
+              div.innerHTML = `
+                <div class="match-item-header">
+                    <h4>${info.team1.teamName} <span style="color:#aaa; font-size:0.8rem">vs</span> ${info.team2.teamName}</h4>
+                    <span class="match-fmt">${info.matchFormat}</span>
+                </div>
+                <p class="match-item-score">${listScore}</p>
+                <p class="match-item-status">${info.status}</p>
+              `;
+              container.appendChild(div);
+            });
+          }
+        });
+      });
+
+      if(matchCount === 0) {
+          container.innerHTML = "<p style='text-align:center; padding:20px; color:#aaa;'>No live matches at this moment.</p>";
+      }
+
+      msg.innerText = `Sync Complete (${new Date().toLocaleTimeString()}) ✅`;
+
+    } catch (err) {
+      console.error(err);
+      msg.innerText = "Connection Failed! Check API.";
+      container.innerHTML = "<p style='text-align:center; color:#ff0055; padding:20px;'>Failed to connect. Check internet or API limit.</p>";
+    } finally {
+        btn.innerText = "🔄 Update Scores";
+        btn.style.opacity = "1";
+        btn.disabled = false;
+    }
+  }
+
+  // Auto-run on load
+  window.onload = loadData;
+
+  // Auto-refresh every 60 seconds (60000ms)
+  setInterval(loadData, 60000);
+</script>
+
+</body>
+</html>
